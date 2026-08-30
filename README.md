@@ -1,80 +1,154 @@
+> [!NOTE]
+> **[Chain Reaction is live on Vercel!](https://chain-react.vercel.app)**
+
+<div align="center">
+
 # Chain Reaction 🔗
 
-Draw it. Guess it. Pass it on. A telephone-style drawing & guessing party game — 3 to 8 players, no accounts, no database. Everything free to run and host.
+### Draw it. Guess it. Pass it on.
 
-- One player writes a secret phrase.
-- The next player draws it (they only see the phrase, not who wrote it).
-- The next player guesses what the drawing shows (they only see the drawing).
-- It keeps alternating draw → guess → draw → guess until it loops back around.
-- At the end, everyone watches every chain unfold from original phrase to final (usually very wrong) guess.
+A telephone-style drawing & guessing party game for 3 to 8 players.  
+**No accounts • No database • 100% free to host & play**
 
-## How it's built
+---
 
-- `server/` — Node.js + Socket.io. Holds all game state **in memory only** (no database, no login). Rooms disappear when everyone leaves.
-- `client/` — React + Vite. Talks to the server over WebSockets.
+<a href="https://chain-react.vercel.app" target="_blank"><img src="https://img.shields.io/badge/Play_Live-Vercel-black?style=for-the-badge&logo=vercel" alt="Play Live on Vercel" height="40"/></a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://chain-reaction-game-7ncz.onrender.com/health" target="_blank"><img src="https://img.shields.io/badge/Backend_Status-Render-46E3B7?style=for-the-badge&logo=render" alt="Render Backend Status" height="40"/></a>
 
-## Run it locally
+---
 
-You need Node.js 18+ installed.
+</div>
 
-**1. Start the server**
+> [!TIP]
+> **Quick Start:** Play right now in your browser at [chain-react.vercel.app](https://chain-react.vercel.app). Open it in 3 or more browser tabs to simulate a multi-player lobby!
+
+---
+
+## Table of Contents
+
+- [What is Chain Reaction?](#what-is-chain-reaction)
+- [How it Works](#how-it-works)
+- [Features](#features)
+- [Quick Start (Local Development)](#quick-start-local-development)
+- [Architecture & Tech Stack](#architecture--tech-stack)
+- [Deployment Guide](#deployment-guide)
+  - [Frontend (Vercel)](#frontend-vercel)
+  - [Backend (Render)](#backend-render)
+- [Game Rules Recap](#game-rules-recap)
+- [License](#license)
+
+---
+
+## What is Chain Reaction?
+
+**Chain Reaction** is an open-source, real-time multiplayer telephone game (inspired by Telestrations and Gartic Phone). 
+
+Players alternate between writing phrases and drawing pictures. At the end of the round, everyone watches the chain unfold from the original prompt to the hilarious final guess!
+
+### Why Play Chain Reaction?
+
+- ⚡ **Instant Rooms**: Create or join rooms with a simple 5-character room code.
+- 🔒 **Zero Footprint**: No registration, no login, and no databases — everything runs strictly in-memory.
+- 📱 **Mobile & Desktop Friendly**: Draw easily on touchscreens or with a mouse.
+
+---
+
+## How it Works
+
+```text
+┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+│ Player 1 Writes │  ──►  │ Player 2 Draws  │  ──►  │ Player 3 Guesses│  ──►  │  Final Reveal   │
+│ "Flying Cat"    │       │ the picture     │       │ "Superhero Cat" │       │ Watch the chain │
+└─────────────────┘       └─────────────────┘       └─────────────────┘       └─────────────────┘
+```
+
+1. **Step 1 — Write**: Everyone writes a secret prompt.
+2. **Step 2 — Draw**: Prompts are shuffled. You draw what the previous player wrote.
+3. **Step 3 — Guess**: You guess what the previous player drew.
+4. **Loop**: The cycle alternates until every chain makes a full loop around all players.
+5. **Reveal**: Watch the hilarious evolution of every chain together!
+
+---
+
+## Features
+
+- **Real-Time Synchronized Lobby**: Powered by Socket.io WebSockets.
+- **Interactive Canvas**: HTML5 Canvas with custom color palettes, brush sizes, and clear controls.
+- **Dynamic Host Controls**: Host manages game initialization and chain reveal steps.
+- **Privacy First**: Game state disappears the moment players leave the room.
+
+---
+
+## Quick Start (Local Development)
+
+### Prerequisites
+
+- **Node.js 18+** installed on your system.
+
+> [!WARNING]
+> You need at least **3 players** (or 3 browser tabs) to start a game round.
+
+### 1. Start the Backend Server
+
 ```bash
 cd server
 npm install
 npm start
 ```
-It runs on `http://localhost:4000`.
+The server will run on `http://localhost:4000`.
 
-**2. Start the client** (in a second terminal)
+### 2. Start the Frontend Client
+
+In a second terminal window:
+
 ```bash
 cd client
 npm install
 npm run dev
 ```
-It runs on `http://localhost:5173` and already points at `localhost:4000` by default.
+The client will run on `http://localhost:5173`.
 
-Open the client URL in a few browser tabs (or share your local IP with friends on the same WiFi) to test a full game — you need at least 3 players to start.
+---
 
-## Deploy to Render (100% free tier)
+## Architecture & Tech Stack
 
-You'll deploy **two separate services** from the same repo: the Socket.io server as a Web Service, and the React app as a Static Site.
+| Layer | Technology | Description |
+| --- | --- | --- |
+| **Frontend** | React 18 + Vite | Fast SPA UI with responsive canvas drawing component |
+| **Backend** | Node.js + Express | Lightweight server handling room lifecycle & HTTP endpoints |
+| **Sockets** | Socket.io | Bi-directional real-time communication for game steps |
+| **Hosting** | Vercel + Render | Decoupled client & server deployment architecture |
 
-### Option A — one-click with the included blueprint
+---
 
-1. Push this project to a GitHub repo.
-2. In Render, click **New → Blueprint**, connect the repo. Render will read `render.yaml` and create both services automatically.
-3. Once created, open the **chain-reaction-client** static site's settings → Environment, and set:
-   - `VITE_SERVER_URL` = the URL Render gave your `chain-reaction-server` (something like `https://chain-reaction-server.onrender.com`)
-4. Trigger a manual redeploy of the client so it picks up the env var (static sites bake env vars in at build time).
+## Deployment Guide
 
-### Option B — manual setup
+### Frontend (Vercel)
 
-**Deploy the server:**
-1. New → Web Service → connect your repo.
-2. Root directory: `server`
-3. Build command: `npm install`
-4. Start command: `npm start`
-5. Plan: Free
-6. Deploy, then copy the live URL (e.g. `https://chain-reaction-server.onrender.com`).
+1. Connect repo `jojin1709/chain-reaction-game` to Vercel.
+2. Set Root Directory to `client`.
+3. Add Environment Variable:
+   - `VITE_SERVER_URL` = `https://chain-reaction-game-7ncz.onrender.com`
+4. Deploy to get your live URL (e.g., `https://chain-react.vercel.app`).
 
-**Deploy the client:**
-1. New → Static Site → connect your repo.
-2. Root directory: `client`
-3. Build command: `npm install && npm run build`
-4. Publish directory: `dist`
-5. Add environment variable `VITE_SERVER_URL` = the server URL from above.
-6. Add a rewrite rule: source `/*` → destination `/index.html` (so page refreshes don't 404).
-7. Deploy.
+### Backend (Render)
 
-Share the client's URL with friends — they type a nickname, create or join a room with a code, and you're playing.
+1. Create a new **Web Service** on Render connected to `jojin1709/chain-reaction-game`.
+2. Root Directory: `server`
+3. Build Command: `npm install`
+4. Start Command: `npm start`
 
-### A note on free tier
+---
 
-Render's free Web Services **sleep after 15 minutes of no traffic** and take ~30–60 seconds to wake back up. This game is lobby-based (everyone waits for players to join anyway) so it's a non-issue — just expect the first person to open the game after a while to see a short delay before the server responds.
+## Game Rules Recap
 
-## Game rules recap
+- **Player Limit**: 3–8 players per room.
+- **Host Privileges**: Only the room creator can start the game and advance reveal slides.
+- **Anonymity**: Players only see the previous step, keeping the chain secret until the final reveal!
 
-- 3–8 players per room.
-- Host starts the game once everyone's in.
-- Everyone writes a phrase → passes to write/draw alternately → full reveal at the end.
-- No accounts, no saved history — closing the tab or refreshing loses your spot in that room.
+---
+
+<p align="center">
+  <b>Built with ❤️ for game nights</b>
+</p>
