@@ -7,7 +7,7 @@
 
 ### Draw it. Guess it. Pass it on.
 
-A telephone-style drawing & guessing party game for 3 to 8 players.  
+A telephone-style drawing & guessing party game for 2 to 12 players.  
 **Developed by JOJIN JOHN**  
 *No accounts • No database • 100% free to host & play*
 

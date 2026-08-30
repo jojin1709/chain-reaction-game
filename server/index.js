@@ -235,8 +235,8 @@ io.on("connection", (socket) => {
       return;
     }
 
-    if (room.phase !== "lobby") return cb && cb({ ok: false, error: "Game already started" });
-    if (room.players.length >= 8) return cb && cb({ ok: false, error: "Room is full (max 8)" });
+    const maxP = room.settings?.maxPlayers || 8;
+    if (room.players.length >= maxP) return cb && cb({ ok: false, error: `Room is full (max ${maxP})` });
 
     const token = sessionToken || nanoid() + nanoid();
     const usedColors = room.players.map((p) => p.avatarColor);
@@ -264,7 +264,7 @@ io.on("connection", (socket) => {
   socket.on("start_game", ({ code }) => {
     const room = rooms[code];
     if (!room || room.hostId !== socket.id) return;
-    if (room.players.length < 3) return;
+    if (room.players.length < 2) return;
     room.order = room.players.map((p) => p.id);
     startWritingPhase(room);
   });
