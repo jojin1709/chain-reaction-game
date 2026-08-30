@@ -8,7 +8,8 @@
 ### Draw it. Guess it. Pass it on.
 
 A telephone-style drawing & guessing party game for 3 to 8 players.  
-**No accounts • No database • 100% free to host & play**
+**Developed by JOJIN JOHN**  
+*No accounts • No database • 100% free to host & play*
 
 ---
 
@@ -36,6 +37,7 @@ A telephone-style drawing & guessing party game for 3 to 8 players.
   - [Frontend (Vercel)](#frontend-vercel)
   - [Backend (Render)](#backend-render)
 - [Game Rules Recap](#game-rules-recap)
+- [Developer](#developer)
 - [License](#license)
 
 ---
@@ -149,6 +151,12 @@ The client will run on `http://localhost:5173`.
 
 ---
 
+## Developer
+
+Developed with ❤️ by **[JOJIN JOHN](https://github.com/jojin1709)**.
+
+---
+
 <p align="center">
-  <b>Built with ❤️ for game nights</b>
+  <b>Built by <a href="https://github.com/jojin1709">JOJIN JOHN</a></b>
 </p>
