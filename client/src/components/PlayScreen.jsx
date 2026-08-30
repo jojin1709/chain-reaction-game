@@ -114,7 +114,11 @@ export default function PlayScreen({ room, assignment, progress }) {
         <div className="pill">Round step {step + 1}</div>
         {totalTimerSeconds > 0 && (
           <div className={`pill timer-badge ${isTimeWarning ? "warning" : ""}`}>
-            ⏰ {timeLeft}s
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 4 }}>
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {timeLeft}s
           </div>
         )}
         <div className="pill">
@@ -134,7 +138,12 @@ export default function PlayScreen({ room, assignment, progress }) {
 
       {submitted ? (
         <div className="waiting-overlay" style={{ color: "var(--ink)" }}>
-          <div className="big">Nice! ✅</div>
+          <div className="big">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Submitted!
+          </div>
           <div>Waiting for the rest of the group…</div>
         </div>
       ) : step === 0 ? (
@@ -154,7 +163,12 @@ export default function PlayScreen({ room, assignment, progress }) {
 
           <div className="prompt-suggestion-row">
             <button type="button" className="btn-link-prompt" onClick={handleStarterPrompt}>
-              💡 Need an idea? Click for a starter prompt
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 4 }}>
+                <path d="M9 18h6"></path>
+                <path d="M10 22h4"></path>
+                <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.55.6 2.97 1.5 4 .76.76 1.23 1.52 1.41 2.5"></path>
+              </svg>
+              Need an idea? Click for a starter prompt
             </button>
           </div>
 
