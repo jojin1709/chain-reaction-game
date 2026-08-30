@@ -18,6 +18,9 @@ export default function App() {
     }
     function onRoomUpdate(data) {
       setRoom(data);
+      if (data && data.phase === "reveal" && data.chains) {
+        setRevealData({ chains: data.chains, revealIndex: data.revealIndex ?? 0 });
+      }
       if (data.phase === "lobby") {
         setAssignment(null);
         setProgress(null);

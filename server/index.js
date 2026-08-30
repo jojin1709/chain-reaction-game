@@ -301,7 +301,9 @@ io.on("connection", (socket) => {
   socket.on("next_reveal", ({ code }) => {
     const room = rooms[code];
     if (!room || room.hostId !== socket.id) return;
-    room.revealIndex = (room.revealIndex || 0) + 1;
+    const maxIdx = (room.chains ? room.chains.length : 1) - 1;
+    room.revealIndex = Math.min(maxIdx, (room.revealIndex || 0) + 1);
+    broadcastRoom(code);
     io.to(code).emit("chain_reveal", { chains: room.chains, revealIndex: room.revealIndex });
   });
 
