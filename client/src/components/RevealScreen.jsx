@@ -7,14 +7,41 @@ export default function RevealScreen({ room, chains, revealIndex, myId }) {
   const [downloading, setDownloading] = useState(false);
 
   const isHost = room.hostId === myId;
-  const chain = chains[revealIndex];
-  const isLast = revealIndex >= chains.length - 1;
+  const safeChains = chains || room.chains || [];
+  const safeIndex = Math.min(Math.max(0, safeChains.length - 1), revealIndex || 0);
+  const chain = safeChains[safeIndex];
+  const isLast = safeIndex >= safeChains.length - 1;
 
   useEffect(() => {
     playRevealSound();
-  }, [revealIndex]);
+  }, [safeIndex]);
 
-  if (!chain) return null;
+  // Fallback card to prevent any blank screen
+  if (!chain || safeChains.length === 0) {
+    return (
+      <div className="card page-fade-enter" style={{ width: "100%", maxWidth: 560, textAlign: "center" }}>
+        <div style={{ fontSize: "1.6rem", fontWeight: 800, fontFamily: "Baloo 2", marginBottom: 12 }}>
+          Round Completed!
+        </div>
+        <p style={{ color: "#554A70", marginBottom: 20 }}>
+          All chains have been revealed. Ready for another round?
+        </p>
+        {isHost ? (
+          <button className="btn btn-primary full" onClick={() => socket.emit("play_again", { code: room.code })}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            Back to Lobby
+          </button>
+        ) : (
+          <div className="pill" style={{ display: "block", textAlign: "center" }}>
+            Waiting for host to return to lobby…
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const original = chain[0];
   const final = chain[chain.length - 1];
@@ -61,7 +88,7 @@ export default function RevealScreen({ room, chains, revealIndex, myId }) {
 
       ctx.fillStyle = "#554A70";
       ctx.font = "600 16px 'Nunito', sans-serif";
-      ctx.fillText(`Room: ${room.code} • Chain ${revealIndex + 1} of ${chains.length}`, cardWidth / 2, 85);
+      ctx.fillText(`Room: ${room.code} • Chain ${safeIndex + 1} of ${safeChains.length}`, cardWidth / 2, 85);
 
       // Load all drawing images first
       const imagePromises = chain.map((entry) => {
@@ -113,7 +140,7 @@ export default function RevealScreen({ room, chains, revealIndex, myId }) {
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = dataUrl;
-      a.download = `chain-reaction-${room.code}-chain-${revealIndex + 1}.png`;
+      a.download = `chain-reaction-${room.code}-chain-${safeIndex + 1}.png`;
       a.click();
     } catch (err) {
       console.error("Failed to generate collage", err);
@@ -133,7 +160,7 @@ export default function RevealScreen({ room, chains, revealIndex, myId }) {
           Chain Reveal
         </div>
         <div className="pill">
-          Chain {revealIndex + 1} of {chains.length}
+          Chain {safeIndex + 1} of {safeChains.length}
         </div>
       </div>
 
