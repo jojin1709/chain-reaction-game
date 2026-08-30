@@ -245,13 +245,16 @@ html, body {
 }
 
 .btn-secondary {
-  background: var(--purple-main);
-  color: white;
+  background: #2A2140;
+  color: #FFFFFF;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
 }
 
 .btn-secondary:hover {
+  background: #1D162E;
+  color: #FFFFFF;
   transform: translateY(-2px);
-  box-shadow: 0 8px 0 rgba(0,0,0,0.18);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3);
 }
 
 .btn-ghost {
