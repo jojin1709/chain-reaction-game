@@ -130,8 +130,8 @@ Players alternate between writing phrases and drawing pictures. At the end of th
 
 ## Community & Policies
 
-- 📜 **[License](LICENSE)** — MIT License
-- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)** — How to submit pull requests & bug reports
+- 🔒 **[License](LICENSE)** — Proprietary (All Rights Reserved)
+- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)** — Bug reports & contribution rules
 - 🕊️ **[Code of Conduct](CODE_OF_CONDUCT.md)** — Contributor Covenant v2.1
 - 🛡️ **[Security Policy](SECURITY.md)** — Vulnerability reporting guidelines
 
@@ -143,10 +143,12 @@ Developed with ❤️ by **[JOJIN JOHN](https://www.linkedin.com/in/jojin-john/)
 
 ---
 
-## License
+## Copyright & License
 
-This project is open-source under the [MIT License](LICENSE) © 2026 JOJIN JOHN.
+© 2026 **JOJIN JOHN**. All Rights Reserved.
+
+No part of this codebase or application may be copied, reproduced, modified, or redistributed without explicit written permission from the author.
 
 <p align="center">
-  <b>Built by <a href="https://www.linkedin.com/in/jojin-john/">JOJIN JOHN</a></b>
+  <b>Developed & Created by <a href="https://www.linkedin.com/in/jojin-john/">JOJIN JOHN</a></b>
 </p>
