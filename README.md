@@ -49,14 +49,15 @@ A telephone-style drawing & guessing party game for 3 to 8 players.
   - [Frontend (Vercel)](#frontend-vercel)
   - [Backend (Render)](#backend-render)
 - [Game Rules Recap](#game-rules-recap)
+- [Community & Policies](#community--policies)
 - [Developer](#developer)
-- [License](#license)
+- [Copyright & License](#copyright--license)
 
 ---
 
 ## What is Chain Reaction?
 
-**Chain Reaction** is an open-source, real-time multiplayer telephone game (inspired by Telestrations and Gartic Phone). 
+**Chain Reaction** is a real-time multiplayer telephone party game (inspired by Telestrations and Gartic Phone). 
 
 Players alternate between writing phrases and drawing pictures. At the end of the round, everyone watches the chain unfold from the original prompt to the hilarious final guess!
 
@@ -64,7 +65,7 @@ Players alternate between writing phrases and drawing pictures. At the end of th
 
 - ⚡ **Instant Rooms**: Create or join rooms with a simple 5-character room code.
 - 🔒 **Zero Footprint**: No registration, no login, and no databases — everything runs strictly in-memory.
-- 📱 **Mobile & Desktop Friendly**: Draw easily on touchscreens or with a mouse.
+- 📱 **Mobile & Desktop Friendly**: Touch-optimized drawing canvas for smartphones, tablets, and desktop browsers.
 
 ---
 
@@ -88,8 +89,12 @@ Players alternate between writing phrases and drawing pictures. At the end of th
 ## Features
 
 - **Real-Time Synchronized Lobby**: Powered by Socket.io WebSockets.
-- **Interactive Canvas**: HTML5 Canvas with custom color palettes, brush sizes, and clear controls.
-- **Dynamic Host Controls**: Host manages game initialization and chain reveal steps.
+- **Configurable Countdown Timers**: Host selects step duration (30s, 45s, 60s, 90s, or Unlimited) with auto-submit protection.
+- **Mid-Round Disconnect & Session Reconnection**: Reconnect mid-game via session tokens without losing room slot or drawing state.
+- **HTML5 Canvas Drawing Engine**: Preset color palette, custom color picker wheel, brush size slider, eraser tool, and stroke undo stack (`Undo`).
+- **Web Audio API Sound Effects**: Zero-dependency audio synthesizer for submit chimes, 10s countdown ticks, and reveal fanfare.
+- **Downloadable PNG Chain Collages**: Export the entire reveal chain (prompts + drawings) as a single downloadable PNG image card.
+- **Starter Prompt Generator & Validation**: Built-in prompt generator and profanity filter.
 - **Privacy First**: Game state disappears the moment players leave the room.
 
 ---
@@ -101,6 +106,7 @@ Players alternate between writing phrases and drawing pictures. At the end of th
 | **Frontend** | React 18 + Vite | Fast SPA UI with responsive canvas drawing component |
 | **Backend** | Node.js + Express | Lightweight server handling room lifecycle & HTTP endpoints |
 | **Sockets** | Socket.io | Bi-directional real-time communication for game steps |
+| **Audio Engine** | Web Audio API | Browser-native sound synthesizer for game sound effects |
 | **Hosting** | Vercel + Render | Decoupled client & server deployment architecture |
 
 ---
@@ -127,8 +133,10 @@ Players alternate between writing phrases and drawing pictures. At the end of th
 ## Game Rules Recap
 
 - **Player Limit**: 3–8 players per room.
-- **Host Privileges**: Only the room creator can start the game and advance reveal slides.
+- **Host Privileges**: Only the room creator can start the game, adjust step timers, and advance reveal slides.
 - **Anonymity**: Players only see the previous step, keeping the chain secret until the final reveal!
+
+---
 
 ## Community & Policies
 
