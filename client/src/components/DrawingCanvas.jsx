@@ -6,14 +6,16 @@ export default function DrawingCanvas({ onReady }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
+  const historyStack = useRef([]);
+
   const [color, setColor] = useState(COLORS[0]);
-  const [lineWidth, setLineWidth] = useState(5);
+  const [lineWidth, setLineWidth] = useState(6);
+  const [canUndo, setCanUndo] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      const prev = canvas.toDataURL ? canvas.toDataURL() : null;
       canvas.width = rect.width * 2;
       canvas.height = rect.height * 2;
       const ctx = canvas.getContext("2d");
@@ -28,6 +30,24 @@ export default function DrawingCanvas({ onReady }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function saveSnapshot() {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    historyStack.current.push(snapshot);
+    if (historyStack.current.length > 20) historyStack.current.shift(); // keep max 20 states
+    setCanUndo(true);
+  }
+
+  function undo() {
+    if (historyStack.current.length === 0) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const previousState = historyStack.current.pop();
+    ctx.putImageData(previousState, 0, 0);
+    setCanUndo(historyStack.current.length > 0);
+  }
+
   function getPos(e) {
     const rect = canvasRef.current.getBoundingClientRect();
     const point = e.touches ? e.touches[0] : e;
@@ -35,12 +55,15 @@ export default function DrawingCanvas({ onReady }) {
   }
 
   function start(e) {
+    if (e.touches && e.cancelable) e.preventDefault();
+    saveSnapshot();
     drawing.current = true;
     lastPos.current = getPos(e);
   }
+
   function move(e) {
     if (!drawing.current) return;
-    e.preventDefault();
+    if (e.touches && e.cancelable) e.preventDefault();
     const ctx = canvasRef.current.getContext("2d");
     const pos = getPos(e);
     ctx.strokeStyle = color;
@@ -53,11 +76,14 @@ export default function DrawingCanvas({ onReady }) {
     ctx.stroke();
     lastPos.current = pos;
   }
-  function end() {
+
+  function end(e) {
+    if (e && e.touches && e.cancelable) e.preventDefault();
     drawing.current = false;
   }
 
   function clearCanvas() {
+    saveSnapshot();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "#FFFFFF";
@@ -65,10 +91,11 @@ export default function DrawingCanvas({ onReady }) {
   }
 
   return (
-    <div>
+    <div className="canvas-wrapper">
       <canvas
         ref={canvasRef}
         className="draw-canvas"
+        style={{ touchAction: "none" }}
         onMouseDown={start}
         onMouseMove={move}
         onMouseUp={end}
@@ -78,24 +105,33 @@ export default function DrawingCanvas({ onReady }) {
         onTouchEnd={end}
       />
       <div className="tool-row">
-        {COLORS.map((c) => (
-          <div
-            key={c}
-            className={`color-dot ${color === c ? "active" : ""}`}
-            style={{ background: c, boxShadow: c === "#FFFFFF" ? "inset 0 0 0 1px #ddd" : "none" }}
-            onClick={() => setColor(c)}
-          />
-        ))}
+        <div className="color-palette">
+          {COLORS.map((c) => (
+            <div
+              key={c}
+              className={`color-dot ${color === c ? "active" : ""}`}
+              style={{ background: c, boxShadow: c === "#FFFFFF" ? "inset 0 0 0 1px #ccc" : "none" }}
+              onClick={() => setColor(c)}
+              title={c === "#FFFFFF" ? "Eraser" : "Color"}
+            />
+          ))}
+        </div>
         <input
           type="range"
-          min="2"
-          max="14"
+          min="3"
+          max="20"
           value={lineWidth}
           onChange={(e) => setLineWidth(Number(e.target.value))}
+          className="size-slider"
         />
-        <button type="button" className="btn btn-ghost" onClick={clearCanvas}>
-          🗑 Clear
-        </button>
+        <div className="canvas-btn-group">
+          <button type="button" className="btn btn-ghost" onClick={undo} disabled={!canUndo}>
+            ↩ Undo
+          </button>
+          <button type="button" className="btn btn-ghost" onClick={clearCanvas}>
+            🗑 Clear
+          </button>
+        </div>
       </div>
     </div>
   );

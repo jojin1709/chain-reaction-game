@@ -491,3 +491,122 @@ canvas.draw-canvas {
   text-decoration: underline;
 }
 
+/* Page Transitions */
+.page-fade-enter {
+  animation: fadeInScale 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Timer Badge & Progress Bar */
+.timer-badge {
+  font-weight: 800;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.timer-badge.warning {
+  background: var(--coral) !important;
+  color: white !important;
+  animation: timerPulse 0.6s infinite alternate ease-in-out;
+}
+
+@keyframes timerPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+.progress-fill.timer-warning {
+  background: var(--coral) !important;
+}
+
+/* Host Settings Panel */
+.settings-panel {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  padding: 12px 16px;
+  backdrop-filter: blur(6px);
+}
+
+.select-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: white;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  outline: none;
+}
+
+.settings-value-pill {
+  background: white;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Starter Prompt Suggestion */
+.prompt-suggestion-row {
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+
+.btn-link-prompt {
+  background: none;
+  border: none;
+  color: var(--purple-light);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.btn-link-prompt:hover {
+  color: var(--purple-deep);
+}
+
+/* Canvas Toolbar Enhancements */
+.canvas-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.color-palette {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.canvas-btn-group {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.size-slider {
+  accent-color: var(--purple);
+  width: 70px;
+  cursor: pointer;
+}
+
+

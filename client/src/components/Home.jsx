@@ -1,21 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { socket } from "../socket";
+
+function getSessionToken() {
+  let token = sessionStorage.getItem("chain_reaction_session_token");
+  if (!token) {
+    token = "st_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+    sessionStorage.setItem("chain_reaction_session_token", token);
+  }
+  return token;
+}
 
 export default function Home({ onJoined }) {
   const [tab, setTab] = useState("create");
-  const [nickname, setNickname] = useState("");
+  const [nickname, setNickname] = useState(() => sessionStorage.getItem("chain_reaction_nickname") || "");
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Check URL parameters for ?code=XXXXX invite link
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get("code");
+    if (codeParam) {
+      setRoomCode(codeParam.toUpperCase());
+      setTab("join");
+    }
+  }, []);
 
   function handleCreate(e) {
     e.preventDefault();
     if (!nickname.trim()) return setError("Enter a nickname first");
     setError("");
     setLoading(true);
-    socket.emit("create_room", { nickname }, (res) => {
+    const sessionToken = getSessionToken();
+    sessionStorage.setItem("chain_reaction_nickname", nickname.trim());
+
+    socket.emit("create_room", { nickname: nickname.trim(), sessionToken }, (res) => {
       setLoading(false);
-      if (res?.ok) onJoined(res.code, nickname);
+      if (res?.ok) onJoined(res.code, nickname.trim());
       else setError(res?.error || "Something went wrong");
     });
   }
@@ -26,15 +48,18 @@ export default function Home({ onJoined }) {
     if (!roomCode.trim()) return setError("Enter a room code");
     setError("");
     setLoading(true);
-    socket.emit("join_room", { code: roomCode, nickname }, (res) => {
+    const sessionToken = getSessionToken();
+    sessionStorage.setItem("chain_reaction_nickname", nickname.trim());
+
+    socket.emit("join_room", { code: roomCode.trim(), nickname: nickname.trim(), sessionToken }, (res) => {
       setLoading(false);
-      if (res?.ok) onJoined(res.code, nickname);
+      if (res?.ok) onJoined(res.code, nickname.trim());
       else setError(res?.error || "Could not join room");
     });
   }
 
   return (
-    <div className="home-wrap">
+    <div className="home-wrap page-fade-enter">
       <div className="logo">
         CHAIN <span className="accent-teal">↻</span>
         <br />
@@ -61,7 +86,10 @@ export default function Home({ onJoined }) {
             placeholder="e.g. Maya"
             value={nickname}
             maxLength={16}
-            onChange={(e) => setNickname(e.target.value)}
+            onChange={(e) => {
+              setNickname(e.target.value);
+              setError("");
+            }}
           />
 
           {tab === "join" && (
@@ -74,7 +102,10 @@ export default function Home({ onJoined }) {
                 value={roomCode}
                 maxLength={6}
                 style={{ textTransform: "uppercase", letterSpacing: 2 }}
-                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  setRoomCode(e.target.value.toUpperCase());
+                  setError("");
+                }}
               />
             </>
           )}

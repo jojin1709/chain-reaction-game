@@ -16,15 +16,11 @@ const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
 
-// In-memory rooms only — no database, no accounts.
-// rooms[code] = {
-//   code, hostId, phase: 'lobby'|'writing'|'chain'|'reveal',
-//   players: [{id, nickname, avatarColor, connected}],
-//   chains: [ [ {type:'phrase'|'drawing', author, authorName, content} ] ],
-//   step, order: [playerId...], submitted: Set,
-// }
-const rooms = {};
+// Minimal 1x1 transparent white PNG data URL for empty drawings
+const BLANK_CANVAS_DATA_URL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
+const rooms = {};
 const AVATAR_COLORS = ["#FF6B6B", "#4ECDC4", "#FFD93D", "#A78BFA", "#6BCB77", "#FF9F5A", "#5AC8FA", "#F783AC"];
 
 function publicRoomState(room) {
@@ -38,6 +34,8 @@ function publicRoomState(room) {
       avatarColor: p.avatarColor,
       connected: p.connected,
     })),
+    settings: room.settings || { timerSeconds: 60 },
+    stepSeconds: room.settings?.timerSeconds || 60,
     round: room.round || 1,
     totalSteps: room.order ? room.order.length : 0,
     step: room.step || 0,
@@ -50,22 +48,25 @@ function broadcastRoom(code) {
   io.to(code).emit("room_update", publicRoomState(room));
 }
 
-function startWritingPhase(room) {
-  room.phase = "writing";
-  room.step = 0;
-  room.submitted = new Set();
-  room.chains = room.order.map((playerId) => {
-    const p = room.players.find((pl) => pl.id === playerId);
-    return [{ type: "phrase", author: playerId, authorName: p ? p.nickname : "?", content: null }];
-  });
-  broadcastRoom(room.code);
-  room.order.forEach((playerId) => {
-    io.to(playerId).emit("your_turn", { isDrawStep: false, previous: null, step: 0 });
-  });
+function clearRoomTimer(room) {
+  if (room.timerId) {
+    clearTimeout(room.timerId);
+    room.timerId = null;
+  }
+}
+
+function startStepTimer(room) {
+  clearRoomTimer(room);
+  const timerSeconds = room.settings?.timerSeconds ?? 60;
+  if (timerSeconds <= 0) return; // Unlimited time
+
+  room.stepStartTime = Date.now();
+  room.timerId = setTimeout(() => {
+    autoSubmitMissingPlayers(room);
+  }, timerSeconds * 1000);
 }
 
 function currentAssignmentFor(room, playerId) {
-  // At step s, player p works on chain (p_index - s) mod N
   const n = room.order.length;
   const pIndex = room.order.indexOf(playerId);
   const chainIndex = ((pIndex - room.step) % n + n) % n;
@@ -78,10 +79,65 @@ function allSubmitted(room) {
   return room.submitted.size >= room.order.length;
 }
 
+function autoSubmitMissingPlayers(room) {
+  if (!room || !room.order) return;
+
+  room.order.forEach((playerId) => {
+    if (!room.submitted.has(playerId)) {
+      const { chainIndex, isDrawStep } = currentAssignmentFor(room, playerId);
+      const player = room.players.find((p) => p.id === playerId);
+      
+      let placeholder = "";
+      if (room.step === 0) {
+        placeholder = "(no phrase entered)";
+        room.chains[chainIndex][0].content = placeholder;
+      } else {
+        placeholder = isDrawStep ? BLANK_CANVAS_DATA_URL : "(no guess entered)";
+        room.chains[chainIndex].push({
+          type: isDrawStep ? "drawing" : "guess",
+          author: playerId,
+          authorName: player ? player.nickname : "?",
+          content: placeholder,
+        });
+      }
+      room.submitted.add(playerId);
+    }
+  });
+
+  io.to(room.code).emit("progress_update", { submitted: room.submitted.size, total: room.order.length });
+  advanceStep(room);
+}
+
+function startWritingPhase(room) {
+  room.phase = "writing";
+  room.step = 0;
+  room.submitted = new Set();
+  room.chains = room.order.map((playerId) => {
+    const p = room.players.find((pl) => pl.id === playerId);
+    return [{ type: "phrase", author: playerId, authorName: p ? p.nickname : "?", content: null }];
+  });
+  
+  broadcastRoom(room.code);
+  const timerSeconds = room.settings?.timerSeconds ?? 60;
+
+  room.order.forEach((playerId) => {
+    io.to(playerId).emit("your_turn", {
+      isDrawStep: false,
+      previous: null,
+      step: 0,
+      timerSeconds,
+    });
+  });
+
+  startStepTimer(room);
+}
+
 function advanceStep(room) {
+  clearRoomTimer(room);
   room.step += 1;
   room.submitted = new Set();
-  const totalSteps = room.order.length; // after N-1 more steps beyond initial phrase, chain complete
+  const totalSteps = room.order.length;
+
   if (room.step >= totalSteps) {
     room.phase = "reveal";
     room.revealIndex = 0;
@@ -89,24 +145,31 @@ function advanceStep(room) {
     io.to(room.code).emit("chain_reveal", { chains: room.chains, revealIndex: 0 });
     return;
   }
+
   room.phase = room.step % 2 === 1 ? "drawing" : "writing";
   broadcastRoom(room.code);
-  // send each player their new assignment
+  const timerSeconds = room.settings?.timerSeconds ?? 60;
+
   room.order.forEach((playerId) => {
     const { lastEntry, isDrawStep } = currentAssignmentFor(room, playerId);
     io.to(playerId).emit("your_turn", {
       isDrawStep,
-      previous: lastEntry, // either a phrase/guess text or a drawing dataURL
+      previous: lastEntry,
       step: room.step,
+      timerSeconds,
     });
   });
+
+  startStepTimer(room);
 }
 
 io.on("connection", (socket) => {
-  socket.on("create_room", ({ nickname }, cb) => {
+  socket.on("create_room", ({ nickname, sessionToken }, cb) => {
     const code = nanoid();
+    const token = sessionToken || nanoid() + nanoid();
     const player = {
       id: socket.id,
+      sessionToken: token,
       nickname: (nickname || "Player").slice(0, 16),
       avatarColor: AVATAR_COLORS[0],
       connected: true,
@@ -116,30 +179,85 @@ io.on("connection", (socket) => {
       hostId: socket.id,
       phase: "lobby",
       players: [player],
+      settings: { timerSeconds: 60 },
     };
     socket.join(code);
-    cb && cb({ ok: true, code });
+    cb && cb({ ok: true, code, sessionToken: token });
     broadcastRoom(code);
   });
 
-  socket.on("join_room", ({ code, nickname }, cb) => {
+  socket.on("join_room", ({ code, nickname, sessionToken }, cb) => {
     code = (code || "").toUpperCase().trim();
     const room = rooms[code];
     if (!room) return cb && cb({ ok: false, error: "Room not found" });
+
+    // Handle re-joining an existing room slot by sessionToken or nickname match
+    const existingPlayer = room.players.find(
+      (p) => (sessionToken && p.sessionToken === sessionToken) || (p.nickname.toLowerCase() === (nickname || "").toLowerCase().trim() && !p.connected)
+    );
+
+    if (existingPlayer) {
+      const oldId = existingPlayer.id;
+      existingPlayer.id = socket.id;
+      existingPlayer.connected = true;
+      if (sessionToken) existingPlayer.sessionToken = sessionToken;
+
+      if (room.hostId === oldId) room.hostId = socket.id;
+
+      if (room.order) {
+        const orderIdx = room.order.indexOf(oldId);
+        if (orderIdx !== -1) room.order[orderIdx] = socket.id;
+      }
+
+      socket.join(code);
+      cb && cb({ ok: true, code, sessionToken: existingPlayer.sessionToken });
+      broadcastRoom(code);
+
+      // If game is active, resend current turn assignment
+      if (room.phase !== "lobby" && room.order) {
+        const { lastEntry, isDrawStep } = currentAssignmentFor(room, socket.id);
+        const elapsed = room.stepStartTime ? Math.floor((Date.now() - room.stepStartTime) / 1000) : 0;
+        const totalTimer = room.settings?.timerSeconds ?? 60;
+        const remainingTimer = Math.max(1, totalTimer - elapsed);
+
+        socket.emit("your_turn", {
+          isDrawStep,
+          previous: room.step === 0 ? null : lastEntry,
+          step: room.step,
+          timerSeconds: remainingTimer,
+        });
+
+        if (room.submitted.has(oldId)) {
+          room.submitted.delete(oldId);
+          room.submitted.add(socket.id);
+        }
+      }
+      return;
+    }
+
     if (room.phase !== "lobby") return cb && cb({ ok: false, error: "Game already started" });
     if (room.players.length >= 8) return cb && cb({ ok: false, error: "Room is full (max 8)" });
 
+    const token = sessionToken || nanoid() + nanoid();
     const usedColors = room.players.map((p) => p.avatarColor);
     const avatarColor = AVATAR_COLORS.find((c) => !usedColors.includes(c)) || AVATAR_COLORS[room.players.length % AVATAR_COLORS.length];
 
     room.players.push({
       id: socket.id,
+      sessionToken: token,
       nickname: (nickname || "Player").slice(0, 16),
       avatarColor,
       connected: true,
     });
     socket.join(code);
-    cb && cb({ ok: true, code });
+    cb && cb({ ok: true, code, sessionToken: token });
+    broadcastRoom(code);
+  });
+
+  socket.on("update_settings", ({ code, settings }) => {
+    const room = rooms[code];
+    if (!room || room.hostId !== socket.id || room.phase !== "lobby") return;
+    room.settings = { ...room.settings, ...settings };
     broadcastRoom(code);
   });
 
@@ -158,16 +276,19 @@ io.on("connection", (socket) => {
 
     const { chainIndex, isDrawStep } = currentAssignmentFor(room, socket.id);
     const player = room.players.find((p) => p.id === socket.id);
+    const cleanContent = content || (isDrawStep ? BLANK_CANVAS_DATA_URL : "(no answer)");
+
     if (room.step === 0) {
-      room.chains[chainIndex][0].content = content;
+      room.chains[chainIndex][0].content = cleanContent;
     } else {
       room.chains[chainIndex].push({
         type: isDrawStep ? "drawing" : "guess",
         author: socket.id,
         authorName: player ? player.nickname : "?",
-        content,
+        content: cleanContent,
       });
     }
+
     room.submitted.add(socket.id);
     io.to(code).emit("progress_update", { submitted: room.submitted.size, total: room.order.length });
 
@@ -186,6 +307,7 @@ io.on("connection", (socket) => {
   socket.on("play_again", ({ code }) => {
     const room = rooms[code];
     if (!room || room.hostId !== socket.id) return;
+    clearRoomTimer(room);
     room.phase = "lobby";
     room.chains = [];
     room.order = null;
@@ -198,8 +320,43 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     for (const code of Object.keys(rooms)) {
       const room = rooms[code];
-      if (room.players.some((p) => p.id === socket.id)) {
-        handleLeave(socket, code);
+      const player = room.players.find((p) => p.id === socket.id);
+      if (player) {
+        player.connected = false;
+        
+        // If room is in active game, auto-submit placeholder for disconnected player so game isn't stuck
+        if (room.phase !== "lobby" && room.phase !== "reveal" && room.order && !room.submitted.has(socket.id)) {
+          const { chainIndex, isDrawStep } = currentAssignmentFor(room, socket.id);
+          const placeholder = isDrawStep ? BLANK_CANVAS_DATA_URL : "(player disconnected)";
+          if (room.step === 0) {
+            room.chains[chainIndex][0].content = "(player disconnected)";
+          } else {
+            room.chains[chainIndex].push({
+              type: isDrawStep ? "drawing" : "guess",
+              author: socket.id,
+              authorName: player.nickname,
+              content: placeholder,
+            });
+          }
+          room.submitted.add(socket.id);
+          io.to(code).emit("progress_update", { submitted: room.submitted.size, total: room.order.length });
+          if (allSubmitted(room)) {
+            advanceStep(room);
+          }
+        }
+
+        // Clean room if all players disconnected
+        const anyConnected = room.players.some((p) => p.connected);
+        if (!anyConnected) {
+          clearRoomTimer(room);
+          delete rooms[code];
+        } else {
+          if (room.hostId === socket.id) {
+            const nextHost = room.players.find((p) => p.connected) || room.players[0];
+            if (nextHost) room.hostId = nextHost.id;
+          }
+          broadcastRoom(code);
+        }
       }
     }
   });
@@ -209,6 +366,7 @@ io.on("connection", (socket) => {
     if (!room) return;
     room.players = room.players.filter((p) => p.id !== socket.id);
     if (room.players.length === 0) {
+      clearRoomTimer(room);
       delete rooms[code];
       return;
     }
