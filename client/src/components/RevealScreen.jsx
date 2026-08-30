@@ -165,24 +165,27 @@ export default function RevealScreen({ room, chains, revealIndex, myId }) {
       </div>
 
       <div className="reveal-strip">
-        {chain.map((entry, i) => (
-          <div key={i} className="reveal-card">
-            <div className="tag">
-              {i === 0 ? "Wrote" : entry.type === "drawing" ? "Drew" : "Guessed"} · {entry.authorName}
+        {chain.map((entry, i) => {
+          const isImage = entry.type === "drawing" || (typeof entry.content === "string" && entry.content.startsWith("data:image"));
+          return (
+            <div key={i} className="reveal-card">
+              <div className="tag">
+                {i === 0 ? "Wrote" : isImage ? "Drew" : "Guessed"} · {entry.authorName}
+              </div>
+              {isImage ? (
+                <img src={entry.content} alt="chain step drawing" />
+              ) : (
+                <div className="text-content">{entry.content}</div>
+              )}
             </div>
-            {entry.type === "drawing" ? (
-              <img src={entry.content} alt="chain step drawing" />
-            ) : (
-              <div className="text-content">{entry.content}</div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="reveal-vs">
         <div className="vs-box original">
           <div className="vs-label">The original</div>
-          {original.type === "drawing" ? (
+          {original.type === "drawing" || (typeof original.content === "string" && original.content.startsWith("data:image")) ? (
             <img src={original.content} alt="original drawing" style={{ maxHeight: 60, borderRadius: 8, marginTop: 4 }} />
           ) : (
             original.content
@@ -190,7 +193,7 @@ export default function RevealScreen({ room, chains, revealIndex, myId }) {
         </div>
         <div className="vs-box final">
           <div className="vs-label">The final step</div>
-          {final.type === "drawing" ? (
+          {final.type === "drawing" || (typeof final.content === "string" && final.content.startsWith("data:image")) ? (
             <img src={final.content} alt="final drawing" style={{ maxHeight: 60, borderRadius: 8, marginTop: 4 }} />
           ) : (
             final.content

@@ -277,13 +277,14 @@ io.on("connection", (socket) => {
 
     const { chainIndex, isDrawStep } = currentAssignmentFor(room, socket.id);
     const player = room.players.find((p) => p.id === socket.id);
-    const cleanContent = content || (isDrawStep ? BLANK_CANVAS_DATA_URL : "(no answer)");
+    const isImageContent = typeof cleanContent === "string" && cleanContent.startsWith("data:image");
+    const entryType = isImageContent ? "drawing" : isDrawStep ? "drawing" : "guess";
 
     if (room.step === 0) {
       room.chains[chainIndex][0].content = cleanContent;
     } else {
       room.chains[chainIndex].push({
-        type: isDrawStep ? "drawing" : "guess",
+        type: entryType,
         author: socket.id,
         authorName: player ? player.nickname : "?",
         content: cleanContent,

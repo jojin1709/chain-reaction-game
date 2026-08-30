@@ -20,6 +20,7 @@ export default function PlayScreen({ room, assignment, progress }) {
     setText("");
     setSubmitted(false);
     setError("");
+    getDataUrlRef.current = null;
 
     if (!assignment || totalTimerSeconds <= 0) {
       setTimeLeft(0);
