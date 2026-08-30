@@ -22,16 +22,26 @@ A telephone-style drawing & guessing party game for 3 to 8 players.
 </div>
 
 > [!TIP]
-> **Quick Start:** Play right now in your browser at [chain-react.vercel.app](https://chain-react.vercel.app). Open it in 3 or more browser tabs to simulate a multi-player lobby!
+> **Play Instantly:** Play right now in your browser at [chain-react.vercel.app](https://chain-react.vercel.app). Open it in 3 or more browser tabs to simulate a multi-player lobby!
+
+---
+
+## Gameplay Preview
+
+<p align="center">
+  <img src="assets/demo-1.png" alt="Chain Reaction Gameplay Preview 1" width="48%" />
+  &nbsp;
+  <img src="assets/demo-2.png" alt="Chain Reaction Gameplay Preview 2" width="48%" />
+</p>
 
 ---
 
 ## Table of Contents
 
 - [What is Chain Reaction?](#what-is-chain-reaction)
+- [Gameplay Preview](#gameplay-preview)
 - [How it Works](#how-it-works)
 - [Features](#features)
-- [Quick Start (Local Development)](#quick-start-local-development)
 - [Architecture & Tech Stack](#architecture--tech-stack)
 - [Deployment Guide](#deployment-guide)
   - [Frontend (Vercel)](#frontend-vercel)
@@ -79,37 +89,6 @@ Players alternate between writing phrases and drawing pictures. At the end of th
 - **Interactive Canvas**: HTML5 Canvas with custom color palettes, brush sizes, and clear controls.
 - **Dynamic Host Controls**: Host manages game initialization and chain reveal steps.
 - **Privacy First**: Game state disappears the moment players leave the room.
-
----
-
-## Quick Start (Local Development)
-
-### Prerequisites
-
-- **Node.js 18+** installed on your system.
-
-> [!WARNING]
-> You need at least **3 players** (or 3 browser tabs) to start a game round.
-
-### 1. Start the Backend Server
-
-```bash
-cd server
-npm install
-npm start
-```
-The server will run on `http://localhost:4000`.
-
-### 2. Start the Frontend Client
-
-In a second terminal window:
-
-```bash
-cd client
-npm install
-npm run dev
-```
-The client will run on `http://localhost:5173`.
 
 ---
 
