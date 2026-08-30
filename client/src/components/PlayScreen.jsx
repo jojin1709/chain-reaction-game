@@ -8,32 +8,58 @@ export default function PlayScreen({ room, assignment, progress }) {
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const [timeLeft, setTimeLeft] = useState(assignment?.timerSeconds || 60);
+  const [timeLeft, setTimeLeft] = useState(() => assignment?.timerSeconds || 60);
 
   const getDataUrlRef = useRef(null);
   const timerRef = useRef(null);
+  const submittedRef = useRef(false);
 
   const totalTimerSeconds = assignment?.timerSeconds || 60;
+
+  function submit(content) {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+    setSubmitted(true);
+    clearInterval(timerRef.current);
+    playSubmitSound();
+    socket.emit("submit_step", { code: room.code, content });
+  }
+
+  function handleAutoSubmitOnExpiry() {
+    if (submittedRef.current) return;
+    if (assignment?.isDrawStep && getDataUrlRef.current) {
+      const dataUrl = getDataUrlRef.current();
+      submit(dataUrl);
+    } else {
+      const fallback = text.trim() ? sanitizeProfanity(text.trim()) : "(time expired)";
+      submit(fallback);
+    }
+  }
 
   // Handle timer countdown
   useEffect(() => {
     setText("");
     setSubmitted(false);
+    submittedRef.current = false;
     setError("");
     getDataUrlRef.current = null;
 
-    if (!assignment || totalTimerSeconds <= 0) {
+    if (!assignment) return;
+
+    const initialTime = assignment.timerSeconds ?? 60;
+    if (initialTime <= 0) {
       setTimeLeft(0);
       return;
     }
 
-    setTimeLeft(totalTimerSeconds);
+    setTimeLeft(initialTime);
     clearInterval(timerRef.current);
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current);
+          handleAutoSubmitOnExpiry();
           return 0;
         }
         if (prev <= 10) {
@@ -44,25 +70,8 @@ export default function PlayScreen({ room, assignment, progress }) {
     }, 1000);
 
     return () => clearInterval(timerRef.current);
-  }, [assignment?.step, totalTimerSeconds]);
-
-  // Auto-submit when time expires
-  useEffect(() => {
-    if (timeLeft === 0 && totalTimerSeconds > 0 && !submitted && assignment) {
-      handleAutoSubmitOnExpiry();
-    }
-  }, [timeLeft, totalTimerSeconds, submitted, assignment]);
-
-  function handleAutoSubmitOnExpiry() {
-    if (submitted) return;
-    if (assignment.isDrawStep && getDataUrlRef.current) {
-      const dataUrl = getDataUrlRef.current();
-      submit(dataUrl);
-    } else {
-      const fallback = text.trim() ? sanitizeProfanity(text.trim()) : "(time expired)";
-      submit(fallback);
-    }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignment?.step, assignment?.timerSeconds]);
 
   if (!assignment) {
     return (
@@ -74,14 +83,6 @@ export default function PlayScreen({ room, assignment, progress }) {
 
   const { isDrawStep, previous, step } = assignment;
   const total = progress?.total || room.players.length;
-
-  function submit(content) {
-    if (submitted) return;
-    setSubmitted(true);
-    clearInterval(timerRef.current);
-    playSubmitSound();
-    socket.emit("submit_step", { code: room.code, content });
-  }
 
   function handleTextSubmit(e) {
     e.preventDefault();
