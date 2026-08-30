@@ -136,7 +136,8 @@ function advanceStep(room) {
   clearRoomTimer(room);
   room.step += 1;
   room.submitted = new Set();
-  const totalSteps = room.order.length;
+  // For 2 players, set 3 total steps (Write -> Draw -> Guess) so it ends on a guess
+  const totalSteps = room.order.length === 2 ? 3 : room.order.length;
 
   if (room.step >= totalSteps) {
     room.phase = "reveal";

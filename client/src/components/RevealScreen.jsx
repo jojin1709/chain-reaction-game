@@ -25,7 +25,9 @@ export default function RevealScreen({ room, chains, revealIndex, myId }) {
       const typeLabel = i === 0 ? "Started" : entry.type === "drawing" ? "Drew picture" : "Guessed";
       summary += `${i + 1}. ${entry.authorName} (${typeLabel}): ${entry.type === "drawing" ? "[Drawing]" : entry.content}\n`;
     });
-    summary += `\nResult: "${original.content}" -> "${final.content}"`;
+    const origContent = original.type === "drawing" ? "[Drawing]" : original.content;
+    const finalContent = final.type === "drawing" ? "[Drawing]" : final.content;
+    summary += `\nResult: "${origContent}" -> "${finalContent}"`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(summary);
@@ -153,11 +155,19 @@ export default function RevealScreen({ room, chains, revealIndex, myId }) {
       <div className="reveal-vs">
         <div className="vs-box original">
           <div className="vs-label">The original</div>
-          {original.content}
+          {original.type === "drawing" ? (
+            <img src={original.content} alt="original drawing" style={{ maxHeight: 60, borderRadius: 8, marginTop: 4 }} />
+          ) : (
+            original.content
+          )}
         </div>
         <div className="vs-box final">
-          <div className="vs-label">The final guess</div>
-          {final.content}
+          <div className="vs-label">The final step</div>
+          {final.type === "drawing" ? (
+            <img src={final.content} alt="final drawing" style={{ maxHeight: 60, borderRadius: 8, marginTop: 4 }} />
+          ) : (
+            final.content
+          )}
         </div>
       </div>
 
