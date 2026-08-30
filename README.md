@@ -128,14 +128,25 @@ Players alternate between writing phrases and drawing pictures. At the end of th
 - **Host Privileges**: Only the room creator can start the game and advance reveal slides.
 - **Anonymity**: Players only see the previous step, keeping the chain secret until the final reveal!
 
+## Community & Policies
+
+- 📜 **[License](LICENSE)** — MIT License
+- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)** — How to submit pull requests & bug reports
+- 🕊️ **[Code of Conduct](CODE_OF_CONDUCT.md)** — Contributor Covenant v2.1
+- 🛡️ **[Security Policy](SECURITY.md)** — Vulnerability reporting guidelines
+
 ---
 
 ## Developer
 
-Developed with ❤️ by **[JOJIN JOHN](https://github.com/jojin1709)**.
+Developed with ❤️ by **[JOJIN JOHN](https://www.linkedin.com/in/jojin-john/)**.
 
 ---
 
+## License
+
+This project is open-source under the [MIT License](LICENSE) © 2026 JOJIN JOHN.
+
 <p align="center">
-  <b>Built by <a href="https://github.com/jojin1709">JOJIN JOHN</a></b>
+  <b>Built by <a href="https://www.linkedin.com/in/jojin-john/">JOJIN JOHN</a></b>
 </p>
