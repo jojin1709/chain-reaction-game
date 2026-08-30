@@ -1,5 +1,5 @@
 > [!NOTE]
-> **[Chain Reaction is live on Vercel!](https://chain-react.vercel.app)** | Explore the **[Interactive Showcase Website](website/index.html)**
+> **[Chain Reaction is live on Vercel!](https://chain-react.vercel.app)** | Explore the **[Interactive Showcase Website](https://jojin1709.github.io/chain-reaction-game/)**
 
 <div align="center">
 
@@ -15,7 +15,7 @@ A telephone-style drawing & guessing party game for 3 to 8 players.
 
 <a href="https://chain-react.vercel.app" target="_blank"><img src="https://img.shields.io/badge/Play_Live-Vercel-black?style=for-the-badge&logo=vercel" alt="Play Live on Vercel" height="40"/></a>
 &nbsp;&nbsp;&nbsp;&nbsp;
-<a href="website/index.html" target="_blank"><img src="https://img.shields.io/badge/Interactive_Showcase-Website-7B5CFA?style=for-the-badge&logo=html5" alt="Interactive Showcase Website" height="40"/></a>
+<a href="https://jojin1709.github.io/chain-reaction-game/" target="_blank"><img src="https://img.shields.io/badge/Showcase_Site-GitHub_Pages-7B5CFA?style=for-the-badge&logo=github" alt="Showcase Site on GitHub Pages" height="40"/></a>
 &nbsp;&nbsp;&nbsp;&nbsp;
 <a href="https://chain-reaction-game-7ncz.onrender.com/health" target="_blank"><img src="https://img.shields.io/badge/Backend_Status-Render-46E3B7?style=for-the-badge&logo=render" alt="Render Backend Status" height="40"/></a>
 
