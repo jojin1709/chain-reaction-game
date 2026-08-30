@@ -105,7 +105,15 @@ export default function Home({ onJoined }) {
 
       <div className="developer-card">
         <div className="dev-info">
-          <div className="dev-avatar">JJ</div>
+          <img
+            src="https://github.com/jojin1709.png"
+            alt="JOJIN JOHN"
+            className="dev-avatar-img"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/developer.png";
+            }}
+          />
           <div>
             <div className="dev-title">Developer</div>
             <div className="dev-name">JOJIN JOHN</div>

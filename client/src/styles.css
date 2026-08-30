@@ -442,6 +442,23 @@ canvas.draw-canvas {
   transform: translateY(-2px);
 }
 
+.dev-avatar-img {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--teal);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.dev-footer-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--teal);
+}
+
 .dev-footer {
   position: absolute;
   bottom: 12px;
@@ -449,7 +466,7 @@ canvas.draw-canvas {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-size: 0.82rem;
   color: rgba(255, 255, 255, 0.8);
   white-space: nowrap;

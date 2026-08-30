@@ -70,6 +70,15 @@ export default function App() {
       <div className="chain-bg-motif" />
       {content}
       <footer className="dev-footer">
+        <img
+          src="https://github.com/jojin1709.png"
+          alt="JOJIN JOHN"
+          className="dev-footer-img"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/developer.png";
+          }}
+        />
         <span>Developed by <strong>JOJIN JOHN</strong></span>
         <span style={{ opacity: 0.4 }}>•</span>
         <a
